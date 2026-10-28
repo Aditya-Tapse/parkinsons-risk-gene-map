@@ -1,0 +1,13 @@
+numpy>=1.26,<2.1
+pandas>=2.3,<3  # nilearn needs >=2.3; abagen still uses groupby(axis=1), removed in pandas 3
+scipy>=1.11
+statsmodels>=0.14
+matplotlib>=3.8
+seaborn>=0.13
+nibabel>=5.2
+nilearn>=0.10.3
+# PyPI release 0.1.3 (2021) needs pandas<2; this master commit is pandas-2 compatible
+abagen @ https://github.com/netneurolab/abagen/archive/1f11d615ba0efafdb9befb5a65ee146c25fc5d49.zip
+neuromaps>=0.0.5
+requests>=2.31
+tqdm>=4.66
