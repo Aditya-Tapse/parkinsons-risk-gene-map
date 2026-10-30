@@ -1,12 +1,9 @@
 .venv/
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
+Docs/
 
-# large downloads and intermediate data (rebuilt by run_pipeline.py)
+# downloaded and intermediate data, rebuilt by run_pipeline.py
 data/raw/*
 data/processed/
-
-# keep the exact GWAS Catalog snapshot the results were built from (~600 KB)
 !data/raw/gwas_pd_associations.tsv
-Docs/

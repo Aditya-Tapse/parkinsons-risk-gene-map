@@ -1,24 +1,21 @@
-"""Step 5: does the PD-gene expression map line up with where PD thins the cortex?
+"""Map-to-map test: does the PD-gene expression map correlate with PD cortical thinning?
 
 Neighbouring regions have similar values (spatial autocorrelation), so shuffling
-region labels gives p-values that are too small. A spin test rotates the map
-on the sphere instead, which keeps its spatial structure intact.
+region labels gives p-values that are too small. The spin test rotates the map
+on the sphere instead, which preserves its spatial structure.
 """
 import numpy as np
 import pandas as pd
+from neuromaps import nulls
+from nilearn import datasets
 from scipy.stats import spearmanr
 
 from src import config
+from src.fetch_expression import load_atlas
 
 
 def load_atrophy(info):
-    """ENIGMA-PD cortical thickness effect sizes (Laansma et al. 2021), one per DK cortical region.
-
-    Expected CSV columns: label, hemisphere (L/R), d. Values must be copied from
-    the paper's supplementary table; nothing here is filled in automatically.
-    """
-    if not config.ATROPHY_CSV.exists():
-        raise FileNotFoundError(f"add the ENIGMA-PD effect sizes to {config.ATROPHY_CSV}")
+    """ENIGMA-PD cortical thickness Cohen's d (Laansma et al. 2021, Suppl. Table 2a), by region id."""
     atrophy = pd.read_csv(config.ATROPHY_CSV)
     atrophy["name"] = atrophy["label"] + "_" + atrophy["hemisphere"]
     cortex = info[info["structure"] == "cortex"]
@@ -31,19 +28,20 @@ def naive_null(x, y, n_perm=config.N_PERM_GENES, seed=config.SEED):
 
 
 def spin_null(x, n_perm=config.N_PERM_SPATIAL, seed=config.SEED):
-    """Alexander-Bloch spins of a DK cortical map; returns (n_regions, n_perm)."""
-    from neuromaps import nulls
-    from src.fetch_expression import load_atlas
+    """Alexander-Bloch spins of a DK cortical map -> (n_regions, n_perm).
 
-    parcellation = load_atlas(surface=True)["image"]   # (lh, rh) fsaverage5 label GIFTIs
+    x must be sorted by region id: neuromaps relabels the parcels (lh 1-34,
+    rh 42-75) in sorted order.
+    """
+    fsavg = datasets.fetch_surf_fsaverage("fsaverage5")
     return nulls.alexander_bloch(
-        x, atlas="fsaverage", density="10k", parcellation=parcellation,
-        n_perm=n_perm, seed=seed,
+        x, atlas="fsaverage", density="10k", parcellation=load_atlas(surface=True)["image"],
+        n_perm=n_perm, seed=seed, surfaces=(fsavg["sphere_left"], fsavg["sphere_right"]),
     )
 
 
 def compare(expression_z, atrophy_d):
-    """expression_z, atrophy_d: Series indexed by cortical region id, same regions."""
+    """Spearman rho between the two maps with naive and spin two-sided p-values."""
     ids = expression_z.index.intersection(atrophy_d.index).sort_values()
     x, y = expression_z.loc[ids].to_numpy(), atrophy_d.loc[ids].to_numpy()
     rho = spearmanr(x, y).statistic
@@ -55,10 +53,10 @@ def compare(expression_z, atrophy_d):
     def two_sided(null):
         return (1 + (np.abs(null) >= abs(rho)).sum()) / (len(null) + 1)
 
-    summary = pd.DataFrame(
-        {"null_model": ["naive (shuffle regions)", "spatial (spin test)"],
-         "rho": [rho, rho],
-         "p": [two_sided(naive), two_sided(spun)],
-         "n_perm": [len(naive), len(spun)]}
-    )
+    summary = pd.DataFrame({
+        "null_model": ["naive (shuffle regions)", "spatial (spin test)"],
+        "rho": [rho, rho],
+        "p": [two_sided(naive), two_sided(spun)],
+        "n_perm": [len(naive), len(spun)],
+    })
     return summary, {"x": x, "y": y, "naive": naive, "spin": spun}

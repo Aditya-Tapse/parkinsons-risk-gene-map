@@ -1,9 +1,4 @@
-"""Step 6: every figure, one visual system.
-
-z-scores use a diverging blue <-> red map with a neutral gray midpoint, so
-"no different from random genes" reads as nothing. Text stays in ink colours;
-colour only ever encodes the z value.
-"""
+"""Figures. z-scores use a diverging blue-red colormap with a neutral grey midpoint (z = 0)."""
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
@@ -61,11 +56,8 @@ def _style():
     })
 
 
-def _save(fig, name, out_dir=config.FIGURES, svg=True):
-    out_dir.mkdir(parents=True, exist_ok=True)
+def _save(fig, name, out_dir=config.FIGURES):
     fig.savefig(out_dir / f"{name}.png", dpi=200)
-    if svg:  # brain meshes become ~15 MB SVGs, so those are PNG only
-        fig.savefig(out_dir / f"{name}.svg")
     plt.close(fig)
     print(f"saved {out_dir / name}.png")
 
@@ -111,11 +103,11 @@ def hero(results, title, subtitle, footer, out_name="hero", out_dir=config.FIGUR
             colorbar=False, axes=ax, figure=fig,
         )
         ax.set_facecolor(SURFACE)
-        ax.set_box_aspect(None, zoom=1.45)  # nilearn leaves wide margins around the mesh
+        ax.set_box_aspect(None, zoom=1.45)
         ax.text2D(0.5, 0.0, f"{hemi.title()} · {view}", transform=ax.transAxes,
                   ha="center", color=INK_3, fontsize=10)
 
-    # Subcortex + brainstem: hemispheres are near-identical after mirroring, so average them.
+    # Subcortex + brainstem, averaged across hemispheres
     deep = results[results["structure"] != "cortex"]
     deep = deep.groupby("label").agg(z=("z", "mean"), q=("q", "min")).sort_values("z")
     ax = fig.add_subplot(gs[0:2, 2])
@@ -149,28 +141,7 @@ def hero(results, title, subtitle, footer, out_name="hero", out_dir=config.FIGUR
     fig.text(0.97, 0.03, footer, fontsize=9.5, color=INK_3, ha="right")
     if (results["q"] < config.FDR_ALPHA).any():
         fig.text(0.02, 0.03, "* FDR q < 0.05", fontsize=9.5, color=INK_3)
-    _save(fig, out_name, out_dir, svg=False)
-
-
-def top_regions(results, n=15, out_dir=config.FIGURES):
-    _style()
-    top = results.sort_values("z", ascending=False).head(n).iloc[::-1]
-    fig, ax = plt.subplots(figsize=(8, 6.5))
-    y = np.arange(len(top))
-    colors = Z_CMAP(TwoSlopeNorm(vmin=-3, vcenter=0, vmax=3)(top["z"].clip(-3, 3)))
-    ax.hlines(y, 0, top["z"], color=colors, lw=2)
-    ax.scatter(top["z"], y, s=60, color=colors, zorder=3, edgecolor=SURFACE, linewidth=2)
-    labels = [f"{pretty(l)} ({h})" + ("  *" if q < config.FDR_ALPHA else "")
-              for l, h, q in zip(top["label"], top["hemisphere"], top["q"])]
-    ax.set_yticks(y, labels)
-    ax.tick_params(axis="y", length=0)
-    ax.axvline(0, color=INK_3, lw=1)
-    ax.axvline(2, color=GRID, lw=1, ls="--")
-    ax.set_xlabel("z vs. random gene sets")
-    ax.set_title(f"Top {n} regions by PD risk-gene expression", loc="left", fontsize=14, color=INK)
-    ax.spines["left"].set_visible(False)
-    fig.tight_layout()
-    _save(fig, "top_regions", out_dir)
+    _save(fig, out_name, out_dir)
 
 
 def null_histogram(null_col, observed, region_name, out_dir=config.FIGURES):
@@ -190,7 +161,7 @@ def braak_plot(trend, out_dir=config.FIGURES):
     _style()
     t = trend["table"]
     rng = np.random.default_rng(config.SEED)
-    fig, ax = plt.subplots(figsize=(8, 4.5))
+    fig, ax = plt.subplots(figsize=(8, 5))
     groups = [("1–2\nbrainstem", [1, 2]), ("3\namygdala", [3]), ("4\nmesocortex", [4]),
               ("5\nassociation\ncortex", [5]), ("6\nprimary\ncortex", [6])]
     for i, (_, st) in enumerate(groups):
@@ -200,10 +171,14 @@ def braak_plot(trend, out_dir=config.FIGURES):
         if len(vals):
             ax.hlines(np.median(vals), i - 0.25, i + 0.25, color=INK, lw=2, zorder=4)
     ax.set_xticks(range(len(groups)), [g[0] for g in groups])
+    ax.set_xlabel("Braak stage (order in which Parkinson's pathology reaches each region)")
     ax.axhline(0, color=INK_3, lw=1)
     ax.set_ylabel("z vs. random gene sets")
-    ax.set_title(f"Braak stage trend: ρ = {trend['rho']:.2f}, p = {trend['p']:.3f}",
-                 loc="left", fontsize=14)
+    fig.suptitle("Risk-gene activity does not follow the spread of Parkinson's",
+                 x=0.02, ha="left", fontsize=14, color=INK)
+    ax.set_title(f"Prediction: highest in early stages, falling with each stage.  "
+                 f"Observed ρ = {trend['rho']:.2f}, p = {trend['p']:.2f}  ·  bar = median",
+                 loc="left", fontsize=10, color=INK_2)
     ax.grid(axis="y", color=GRID, lw=0.8)
     ax.set_axisbelow(True)
     fig.tight_layout()
@@ -215,22 +190,27 @@ def spatial_null_plot(spatial, summary, out_dir=config.FIGURES):
     _style()
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 5), gridspec_kw={"width_ratios": [1, 1.2]})
     a1.scatter(spatial["x"], spatial["y"], s=40, color="#2a78d6", edgecolor=SURFACE, linewidth=1.5)
-    a1.set_xlabel("PD risk-gene expression (z)")
-    a1.set_ylabel("Cortical thinning in PD (Cohen's d)")
+    a1.axhline(0, color=INK_3, lw=1)
+    a1.set_xlabel("PD risk-gene expression (z vs. random gene sets)")
+    a1.set_ylabel("Cortical thickness in PD vs. controls (Cohen's d)\n← thinner in PD")
     rho = summary["rho"].iloc[0]
-    a1.set_title(f"Spearman ρ = {rho:.2f}", loc="left", fontsize=14)
+    a1.set_title(f"68 cortical regions  ·  Spearman ρ = {rho:.2f}", loc="left", fontsize=12, color=INK_2)
     a1.grid(color=GRID, lw=0.8)
     a1.set_axisbelow(True)
 
-    bins = np.linspace(-1, 1, 61)
+    bins = np.linspace(-0.6, 0.6, 49)
     a2.hist(spatial["naive"], bins=bins, density=True, color=INK_3, alpha=0.45, label="Naive null (shuffled regions)")
     a2.hist(spatial["spin"], bins=bins, density=True, color="#2a78d6", alpha=0.55, label="Spatial null (spin test)")
     a2.axvline(rho, color=ACCENT, lw=2)
+    a2.text(rho, a2.get_ylim()[1] * 0.97, "  observed", color=INK, va="top")
     p_naive, p_spin = summary["p"].iloc[0], summary["p"].iloc[1]
-    a2.set_title(f"Naive p = {p_naive:.3f}   ·   Spin p = {p_spin:.3f}", loc="left", fontsize=14)
-    a2.set_xlabel("Correlation under the null")
+    a2.set_title(f"Naive p = {p_naive:.2f}  ·  Spin p = {p_spin:.2f}  (spin null is wider: neighbours look alike)",
+                 loc="left", fontsize=12, color=INK_2)
+    a2.set_xlabel("Correlation expected by chance")
     a2.set_yticks([])
     a2.spines["left"].set_visible(False)
-    a2.legend(frameon=False, loc="upper left", labelcolor=INK_2)
+    a2.legend(frameon=False, loc="upper right", labelcolor=INK_2)
+    fig.suptitle("Risk-gene activity does not match where patients' cortex thins",
+                 x=0.02, ha="left", fontsize=14, color=INK)
     fig.tight_layout()
     _save(fig, "spatial_null", out_dir)

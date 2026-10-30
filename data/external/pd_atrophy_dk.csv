@@ -1,0 +1,69 @@
+label,hemisphere,region_name,d
+bankssts,L,Banks of STS,-0.104
+caudalanteriorcingulate,L,Caudal anterior cingulate,0.043
+caudalmiddlefrontal,L,Caudal middle frontal,-0.135
+cuneus,L,Cuneus,-0.112
+entorhinal,L,Entorhinal,-0.096
+fusiform,L,Fusiform,-0.198
+inferiorparietal,L,Inferior parietal,-0.188
+inferiortemporal,L,Inferior temporal,-0.193
+isthmuscingulate,L,Isthmus cingulate,-0.177
+lateraloccipital,L,Lateral occipital,-0.166
+lateralorbitofrontal,L,Lateral orbitofrontal,-0.125
+lingual,L,Lingual,-0.111
+medialorbitofrontal,L,Medial orbitofrontal,-0.098
+middletemporal,L,Middle temporal,-0.156
+parahippocampal,L,Parahippocampal,-0.122
+paracentral,L,Paracentral,-0.109
+parsopercularis,L,Pars opercularis,-0.02
+parsorbitalis,L,Pars orbitalis,-0.11
+parstriangularis,L,Pars triangularis,-0.051
+pericalcarine,L,Pericalcarine,-0.055
+postcentral,L,Postcentral,-0.11
+posteriorcingulate,L,Posterior cingulate,-0.082
+precentral,L,Precentral,-0.104
+precuneus,L,Precuneus,-0.156
+rostralanteriorcingulate,L,Rostral anterior cingulate,0.007
+rostralmiddlefrontal,L,Rostral middle frontal,-0.088
+superiorfrontal,L,Superior frontal,-0.104
+superiorparietal,L,Superior parietal,-0.145
+superiortemporal,L,Superior temporal,-0.096
+supramarginal,L,Supramarginal,-0.131
+frontalpole,L,Frontal pole,-0.011
+temporalpole,L,Temporal pole,-0.102
+transversetemporal,L,Transverse temporal,-0.072
+insula,L,Insula,-0.036
+bankssts,R,Banks of STS,-0.122
+caudalanteriorcingulate,R,Caudal anterior cingulate,-0.027
+caudalmiddlefrontal,R,Caudal middle frontal,-0.04
+cuneus,R,Cuneus,-0.108
+entorhinal,R,Entorhinal,-0.1
+fusiform,R,Fusiform,-0.117
+inferiorparietal,R,Inferior parietal,-0.194
+inferiortemporal,R,Inferior temporal,-0.141
+isthmuscingulate,R,Isthmus cingulate,-0.178
+lateraloccipital,R,Lateral occipital,-0.167
+lateralorbitofrontal,R,Lateral orbitofrontal,-0.141
+lingual,R,Lingual,-0.094
+medialorbitofrontal,R,Medial orbitofrontal,-0.067
+middletemporal,R,Middle temporal,-0.134
+parahippocampal,R,Parahippocampal,-0.108
+paracentral,R,Paracentral,-0.052
+parsopercularis,R,Pars opercularis,-0.026
+parsorbitalis,R,Pars orbitalis,-0.086
+parstriangularis,R,Pars triangularis,-0.027
+pericalcarine,R,Pericalcarine,-0.058
+postcentral,R,Postcentral,-0.104
+posteriorcingulate,R,Posterior cingulate,-0.156
+precentral,R,Precentral,-0.052
+precuneus,R,Precuneus,-0.193
+rostralanteriorcingulate,R,Rostral anterior cingulate,-0.01
+rostralmiddlefrontal,R,Rostral middle frontal,-0.047
+superiorfrontal,R,Superior frontal,-0.11
+superiorparietal,R,Superior parietal,-0.174
+superiortemporal,R,Superior temporal,-0.077
+supramarginal,R,Supramarginal,-0.153
+frontalpole,R,Frontal pole,-0.094
+temporalpole,R,Temporal pole,-0.096
+transversetemporal,R,Transverse temporal,-0.068
+insula,R,Insula,-0.077
